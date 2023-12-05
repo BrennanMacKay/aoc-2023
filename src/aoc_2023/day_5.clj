@@ -19,9 +19,9 @@
     (in-range? (:source curr) v) (- v (:dist curr))
     :else (recur rest v)))
 
-(defn find-location [[curr & rest] original v]
+(defn find-destination [[curr & rest] original v]
   (if (nil? curr)
-    {:seed original :location v}
+    {:source original :destination v}
     (let [next (destination (:mapping curr) v)]
       ;(clojure.pprint/pprint (str "v " v " next " next " curr " curr))
       (recur rest original next))))
@@ -54,20 +54,34 @@
   (let [{:keys [seeds mappings]} (load-data filename)]
     ;(clojure.pprint/pprint [seeds mappings])
     (->> seeds
-         (map (fn [seed] (find-location mappings seed seed)))
-         (map :location)
+         (map (fn [seed] (find-destination mappings seed seed)))
+         (map :destination)
          (apply min))))
 
-(defn expand-seeds [seeds new-seeds]
+(defn seed-ranges [seeds ranges]
   (let [[start length] (take 2 seeds)]
     (if (nil? start)
-      new-seeds
-      (recur (drop 2 seeds) (conj new-seeds (range start (+ start length)))))))
+      ranges
+      (recur (drop 2 seeds) (conj ranges [start (+ start (dec length))])))))
+
+(defn test-locations [location seed-ranges mappings]
+  (let [maybe-seed (find-destination mappings location location)
+        seed? (some #(in-range? % (:destination maybe-seed)) seed-ranges)]
+    (when (= 0 (mod location 10000000)) (prn location))
+    (if seed?
+      maybe-seed
+      (recur (inc location) seed-ranges mappings))))
+
+(defn reverse-mapping [m]
+  (let [updated-mapping (mapv (fn [m] {:dest (:source m)
+                                      :source (:dest m)
+                                      :dist (* -1 (:dist m))})
+                             (:mapping m))]
+    (assoc m :mapping updated-mapping)))
 
 (defn p2 [filename]
   (let [{:keys [seeds mappings]} (load-data filename)
-        seeds (flatten (expand-seeds seeds []))]
-    (->> seeds
-         (map (fn [seed] (find-location mappings seed seed)))
-         (map :location)
-         (apply min))))
+        ranges (seed-ranges seeds [])
+        mappings (reverse mappings)
+        mappings (mapv reverse-mapping mappings)]
+    (test-locations 1 ranges mappings)))
