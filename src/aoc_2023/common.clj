@@ -21,10 +21,11 @@
   (print-method (sequence q) w))
 
 
-(defn draw-grid [grid xb yb]
-  (mapv (fn [y]
-          (prn (apply str
-                      (map (fn [x]
-                             (if (contains? grid [x y]) \# \.))
-                           (range (inc xb))))))
-        (range (inc yb))))
+(defn draw-grid [grid xmin ymin xmax ymax]
+  (let [grid (set grid)]
+    (mapv (fn [y]
+            (prn (apply str
+                        (map (fn [x]
+                               (if (contains? grid [x y]) \# \.))
+                             (range xmin (inc xmax))))))
+          (range ymin (inc ymax)))))
