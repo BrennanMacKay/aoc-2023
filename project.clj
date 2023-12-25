@@ -5,5 +5,6 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/math.numeric-tower "0.0.5"]
-                 [org.clojure/data.priority-map "1.1.0"]]
+                 [org.clojure/data.priority-map "1.1.0"]
+                 [org.jgrapht/jgrapht-core "1.5.2"]]
   :repl-options {:init-ns aoc-2023.core})
